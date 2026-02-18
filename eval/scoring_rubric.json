@@ -1,0 +1,279 @@
+{
+  "version": "2.0.0",
+  "total_points": 100,
+  "phases": {
+    "phase1_rag": {
+      "name": "RAG Pipeline & Retrieval Quality",
+      "weight": 0.30,
+      "max_points": 30,
+      "criteria": [
+        {
+          "id": "rag_bm25",
+          "name": "BM25 Implementation",
+          "points": 5,
+          "check": "bm25_retrieval_functional",
+          "rubric": {
+            "5": "BM25 with proper tokenization, IDF, and scoring. Returns ranked results.",
+            "3": "BM25 works but has minor issues (e.g., no stopword handling).",
+            "1": "Partial implementation, returns results but ranking is incorrect.",
+            "0": "Not implemented or non-functional."
+          }
+        },
+        {
+          "id": "rag_embeddings",
+          "name": "Embedding Retrieval Integration",
+          "points": 5,
+          "check": "embedding_retrieval_functional",
+          "rubric": {
+            "5": "Embedding-based retrieval with sentence-transformers or API. Cosine similarity search.",
+            "3": "Works but uses suboptimal model or distance metric.",
+            "1": "Attempted but not functional without manual fixes.",
+            "0": "Not implemented."
+          }
+        },
+        {
+          "id": "rag_hybrid",
+          "name": "Hybrid Retrieval with RRF",
+          "points": 5,
+          "check": "hybrid_retrieval_functional",
+          "rubric": {
+            "5": "Reciprocal Rank Fusion combining 2+ strategies. Configurable weights.",
+            "3": "Simple score averaging or concatenation of results.",
+            "1": "Attempts combination but results are worse than individual strategies.",
+            "0": "Not implemented."
+          }
+        },
+        {
+          "id": "rag_chunking",
+          "name": "AST-Aware Chunking",
+          "points": 5,
+          "check": "ast_chunking_implemented",
+          "rubric": {
+            "5": "Chunks at function/class boundaries with metadata. Respects import context.",
+            "3": "Chunks at function boundaries but no metadata or import handling.",
+            "1": "Fixed-window chunking with some awareness of boundaries.",
+            "0": "Only default fixed-window chunking."
+          }
+        },
+        {
+          "id": "rag_precision",
+          "name": "Retrieval Precision >= 0.6",
+          "points": 5,
+          "check": "precision_at_5_ge_0.6",
+          "rubric": {
+            "5": "precision@5 >= 0.6 on gold labels across all 10 tasks.",
+            "3": "precision@5 >= 0.4 (moderate relevance).",
+            "1": "precision@5 >= 0.2 (low relevance).",
+            "0": "precision@5 < 0.2 or metrics not computed."
+          }
+        },
+        {
+          "id": "rag_mrr",
+          "name": "MRR >= 0.7",
+          "points": 5,
+          "check": "mrr_ge_0.7",
+          "rubric": {
+            "5": "MRR >= 0.7 — relevant files consistently ranked in top positions.",
+            "3": "MRR >= 0.5 — relevant files usually in top 3.",
+            "1": "MRR >= 0.3 — relevant files present but poorly ranked.",
+            "0": "MRR < 0.3 or not computed."
+          }
+        }
+      ]
+    },
+    "phase2_prompting": {
+      "name": "Prompt Engineering & Structured Output",
+      "weight": 0.20,
+      "max_points": 20,
+      "criteria": [
+        {
+          "id": "prompt_structured",
+          "name": "Structured Output Parsing",
+          "points": 5,
+          "check": "structured_output_works",
+          "rubric": {
+            "5": "Pydantic models for LLM responses. JSON mode or function calling. Retry on parse failure.",
+            "3": "JSON parsing with basic validation. No retry logic.",
+            "1": "Regex-based extraction from raw text.",
+            "0": "No structured output handling."
+          }
+        },
+        {
+          "id": "prompt_cot",
+          "name": "Chain-of-Thought Template Quality",
+          "points": 5,
+          "check": "cot_template_quality",
+          "rubric": {
+            "5": "CoT prompts with analysis steps, file identification, diff reasoning. Measurably improves output.",
+            "3": "Basic CoT with 'think step by step' style prompting.",
+            "1": "Minimal reasoning guidance in prompts.",
+            "0": "No chain-of-thought approach."
+          }
+        },
+        {
+          "id": "prompt_format",
+          "name": "Patch Format Compliance",
+          "points": 5,
+          "check": "patch_format_all_tasks",
+          "rubric": {
+            "5": "All 10 tasks produce valid unified diff format.",
+            "3": "7-9 tasks produce valid diffs.",
+            "1": "4-6 tasks produce valid diffs.",
+            "0": "Fewer than 4 valid diffs."
+          }
+        },
+        {
+          "id": "prompt_effectiveness",
+          "name": "Valid Diffs >= 7/10 Tasks",
+          "points": 5,
+          "check": "valid_diffs_ge_7",
+          "rubric": {
+            "5": "Diffs that apply cleanly and pass checks for >= 7 tasks.",
+            "3": "4-6 tasks pass checks.",
+            "1": "1-3 tasks pass checks.",
+            "0": "No tasks pass checks."
+          }
+        }
+      ]
+    },
+    "phase3_finetune": {
+      "name": "Fine-Tuning & Training Data Curation",
+      "weight": 0.30,
+      "max_points": 30,
+      "criteria": [
+        {
+          "id": "ft_data_format",
+          "name": "Training Data Correctly Formatted",
+          "points": 5,
+          "check": "training_data_valid_jsonl",
+          "rubric": {
+            "5": "Valid JSONL, correct schema, all 50 examples parsed. Chat format for OpenAI API.",
+            "3": "Valid format but missing fields or incorrect schema for some examples.",
+            "1": "Partially valid, many examples fail parsing.",
+            "0": "Invalid format or not prepared."
+          }
+        },
+        {
+          "id": "ft_split",
+          "name": "Train/Val Split",
+          "points": 3,
+          "check": "train_val_split_implemented",
+          "rubric": {
+            "3": "80/20 split with stratification by task or difficulty.",
+            "2": "80/20 split without stratification.",
+            "1": "Split exists but wrong ratios.",
+            "0": "No split implemented."
+          }
+        },
+        {
+          "id": "ft_api",
+          "name": "Fine-Tune API Integration",
+          "points": 7,
+          "check": "finetune_api_works",
+          "rubric": {
+            "7": "Full OpenAI fine-tuning API: create job, poll status, retrieve model. Working end-to-end.",
+            "5": "API integration works but needs manual monitoring.",
+            "3": "Correct API calls but error handling incomplete.",
+            "1": "Stub code with correct endpoint structure.",
+            "0": "Not implemented."
+          }
+        },
+        {
+          "id": "ft_comparison",
+          "name": "Base vs Fine-Tuned Comparison",
+          "points": 5,
+          "check": "model_comparison_report",
+          "rubric": {
+            "5": "Side-by-side comparison with per-task metrics. Pass rate, quality scores, latency.",
+            "3": "Overall pass rate comparison without per-task breakdown.",
+            "1": "Manual qualitative comparison only.",
+            "0": "No comparison."
+          }
+        },
+        {
+          "id": "ft_improvement",
+          "name": "Pass Rate Improvement >= 20%",
+          "points": 5,
+          "check": "pass_rate_improvement_ge_20pct",
+          "rubric": {
+            "5": "Fine-tuned model shows >= 20% improvement in pass rate.",
+            "3": "10-19% improvement.",
+            "1": "1-9% improvement or regression.",
+            "0": "No improvement measured or model not trained."
+          }
+        },
+        {
+          "id": "ft_hyperparams",
+          "name": "Hyperparameter Documentation",
+          "points": 5,
+          "check": "hyperparameter_docs",
+          "rubric": {
+            "5": "Documented learning rate, epochs, batch size with rationale. Multiple configs tested.",
+            "3": "Parameters documented but no experimentation rationale.",
+            "1": "Default parameters used without documentation.",
+            "0": "No documentation."
+          }
+        }
+      ]
+    },
+    "phase4_analytics": {
+      "name": "Analytics, Experiment Design & Failure Analysis",
+      "weight": 0.20,
+      "max_points": 20,
+      "criteria": [
+        {
+          "id": "analytics_failure",
+          "name": "Failure Attribution",
+          "points": 5,
+          "check": "failure_analysis_complete",
+          "rubric": {
+            "5": "All failed tasks categorized (retrieval_miss, generation_error, apply_failure, check_failure). Specific root causes identified.",
+            "3": "Failures categorized but root causes are generic.",
+            "1": "Simple pass/fail listing without categorization.",
+            "0": "No failure analysis."
+          }
+        },
+        {
+          "id": "analytics_rootcause",
+          "name": "Root Cause Analysis Quality",
+          "points": 5,
+          "check": "root_cause_quality",
+          "rubric": {
+            "5": "Actionable insights: specific retrieval gaps, prompt weaknesses, code patterns causing failures. Includes fix suggestions.",
+            "3": "Identifies general patterns but lacks specificity.",
+            "1": "Surface-level observations only.",
+            "0": "No root cause analysis."
+          }
+        },
+        {
+          "id": "analytics_experiment",
+          "name": "A/B Experiment with Statistical Significance",
+          "points": 5,
+          "check": "experiment_statistical",
+          "rubric": {
+            "5": "A/B experiment with N>=5 runs per variant. Paired t-test or bootstrap CI. p-value reported.",
+            "3": "Multiple runs per variant but no significance testing.",
+            "1": "Single run comparison only.",
+            "0": "No experiment."
+          }
+        },
+        {
+          "id": "analytics_report",
+          "name": "Final Report Completeness",
+          "points": 5,
+          "check": "report_complete",
+          "rubric": {
+            "5": "Comprehensive report: RAG metrics, prompt analysis, fine-tuning results, failure analysis, experiment results, recommendations.",
+            "3": "Report covers 3-4 of the areas above.",
+            "1": "Minimal report with just pass/fail results.",
+            "0": "No report."
+          }
+        }
+      ]
+    }
+  },
+  "partial_credit_rules": {
+    "minimum_threshold": 0.1,
+    "description": "Partial credit is awarded at rubric-defined breakpoints. No interpolation between levels."
+  }
+}

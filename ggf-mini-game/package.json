@@ -1,0 +1,23 @@
+{
+  "name": "ggf-mini-game",
+  "version": "1.0.0",
+  "description": "Minimal game-system modules for the GGF LLM Systems Case",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc -p . --noEmit",
+    "demo": "node dist/demo.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

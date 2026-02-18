@@ -1,0 +1,30 @@
+{"task_id":"task_01","negative_file":"src/systems/score.ts","reason":"Contains state manipulation functions but irrelevant to pause toggle","similarity_trap":"Both score and pause check state.paused before operations"}
+{"task_id":"task_01","negative_file":"src/systems/enemyAI.ts","reason":"Contains state machine transitions but not related to pause","similarity_trap":"Enemy state field uses similar pattern to paused boolean"}
+{"task_id":"task_01","negative_file":"src/core/gameState.ts","reason":"Contains paused field in GameState but togglePause belongs in pause.ts","similarity_trap":"Direct access to paused field makes it seem like the right file"}
+{"task_id":"task_02","negative_file":"src/systems/pause.ts","reason":"Pause system has no input mapping functionality","similarity_trap":"Both modify GameState but in different domains"}
+{"task_id":"task_02","negative_file":"src/systems/save.ts","reason":"Serialization unrelated to input mapping","similarity_trap":"Both read/write state properties"}
+{"task_id":"task_02","negative_file":"src/systems/enemyAI.ts","reason":"Enemy AI doesn't handle input","similarity_trap":"Contains state field that could be confused with input state"}
+{"task_id":"task_03","negative_file":"src/systems/enemyAI.ts","reason":"Enemy AI is irrelevant to scoring","similarity_trap":"Both use mathematical calculations"}
+{"task_id":"task_03","negative_file":"src/systems/pause.ts","reason":"Pause system doesn't handle scoring","similarity_trap":"addScore already checks pause state, creating false relevance"}
+{"task_id":"task_03","negative_file":"src/systems/save.ts","reason":"Save system preserves score but doesn't modify it","similarity_trap":"Serializes score data"}
+{"task_id":"task_04","negative_file":"src/systems/score.ts","reason":"Score system doesn't affect enemy behavior","similarity_trap":"Both modify player-related state"}
+{"task_id":"task_04","negative_file":"src/systems/save.ts","reason":"Save doesn't affect enemy AI logic","similarity_trap":"Serializes enemy data"}
+{"task_id":"task_04","negative_file":"src/systems/input.ts","reason":"Input handling unrelated to enemy AI patterns","similarity_trap":"Both process game actions"}
+{"task_id":"task_05","negative_file":"src/systems/input.ts","reason":"Input system irrelevant to save format","similarity_trap":"Both are persistence-adjacent (settings vs saves)"}
+{"task_id":"task_05","negative_file":"src/systems/enemyAI.ts","reason":"Enemy AI has no save/load functionality","similarity_trap":"Enemy state could seem relevant to serialization"}
+{"task_id":"task_05","negative_file":"src/systems/score.ts","reason":"Score is saved but score.ts doesn't handle serialization","similarity_trap":"Score data is part of save format"}
+{"task_id":"task_06","negative_file":"src/systems/score.ts","reason":"Score system doesn't affect enemy speed","similarity_trap":"Both use numerical calculations with multipliers"}
+{"task_id":"task_06","negative_file":"src/systems/pause.ts","reason":"Pause doesn't affect movement speed","similarity_trap":"Both gate game behavior"}
+{"task_id":"task_06","negative_file":"src/systems/input.ts","reason":"Input mapping irrelevant to enemy speed","similarity_trap":"Both affect game responsiveness conceptually"}
+{"task_id":"task_07","negative_file":"src/systems/save.ts","reason":"Save system is for persistence, not event logging","similarity_trap":"Both deal with recording game data"}
+{"task_id":"task_07","negative_file":"src/systems/input.ts","reason":"Input events are different from game event logging","similarity_trap":"Word 'event' appears in both contexts"}
+{"task_id":"task_07","negative_file":"src/systems/score.ts","reason":"Score tracking is not event logging","similarity_trap":"Both track game occurrences"}
+{"task_id":"task_08","negative_file":"src/systems/pause.ts","reason":"Pause is a toggle, not a cooldown timer","similarity_trap":"Both involve time-based state changes"}
+{"task_id":"task_08","negative_file":"src/systems/score.ts","reason":"Score has no time-based mechanics","similarity_trap":"Both track numerical values"}
+{"task_id":"task_08","negative_file":"src/systems/enemyAI.ts","reason":"Enemy AI doesn't use cooldowns","similarity_trap":"Could potentially use cooldowns for attacks"}
+{"task_id":"task_09","negative_file":"src/systems/save.ts","reason":"Save doesn't use RNG","similarity_trap":"Both deal with data generation"}
+{"task_id":"task_09","negative_file":"src/systems/score.ts","reason":"Score doesn't use random numbers","similarity_trap":"Math operations in both"}
+{"task_id":"task_09","negative_file":"src/systems/input.ts","reason":"Input handling is deterministic, no RNG","similarity_trap":"Both affect game behavior"}
+{"task_id":"task_10","negative_file":"src/systems/save.ts","reason":"Save validates data format, not settings values","similarity_trap":"Both perform validation (save format vs settings values)"}
+{"task_id":"task_10","negative_file":"src/systems/input.ts","reason":"Input doesn't validate settings","similarity_trap":"Both configure game behavior"}
+{"task_id":"task_10","negative_file":"src/systems/pause.ts","reason":"Pause is not a settings validator","similarity_trap":"Both affect game configuration state"}

@@ -1,0 +1,434 @@
+{
+  "version": "2.0.0",
+  "description": "Ground truth labels for retrieval evaluation. Each task has ranked relevant files, relevant code chunks with line ranges, and expected diff hunks.",
+  "tasks": {
+    "task_01": {
+      "title": "Pause Toggle Behavior",
+      "relevant_files_ranked": [
+        "src/systems/pause.ts",
+        "src/index.ts",
+        "src/core/gameState.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/systems/pause.ts",
+          "start_line": 1,
+          "end_line": 27,
+          "relevance": 1.0,
+          "reason": "Contains isPaused, pauseGame, resumeGame — togglePause must be added here"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.8,
+          "reason": "Re-export barrel — togglePause must be exported here"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 28,
+          "end_line": 42,
+          "relevance": 0.5,
+          "reason": "GameState interface — paused boolean context"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/pause.ts",
+          "description": "Add togglePause function",
+          "key_content": "export function togglePause(state: GameState): GameState"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export togglePause",
+          "key_content": "togglePause"
+        }
+      ],
+      "hard_negatives": ["src/systems/score.ts", "src/systems/enemyAI.ts"]
+    },
+    "task_02": {
+      "title": "Input Remapping",
+      "relevant_files_ranked": [
+        "src/systems/input.ts",
+        "src/index.ts",
+        "src/core/gameState.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/systems/input.ts",
+          "start_line": 1,
+          "end_line": 57,
+          "relevance": 1.0,
+          "reason": "Input system with key mappings — remapKey must be added here"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.8,
+          "reason": "Re-export barrel file"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 28,
+          "end_line": 35,
+          "relevance": 0.6,
+          "reason": "GameState.inputMap definition"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/input.ts",
+          "description": "Add remapKey function",
+          "key_content": "export function remapKey(state: GameState, action: string, newKeyCode: string): GameState"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export remapKey",
+          "key_content": "remapKey"
+        }
+      ],
+      "hard_negatives": ["src/systems/pause.ts", "src/systems/save.ts"]
+    },
+    "task_03": {
+      "title": "Score Combo Multiplier",
+      "relevant_files_ranked": [
+        "src/systems/score.ts",
+        "src/index.ts",
+        "src/core/gameState.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/systems/score.ts",
+          "start_line": 1,
+          "end_line": 49,
+          "relevance": 1.0,
+          "reason": "Score system — addComboScore must be added here"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 20,
+          "end_line": 26,
+          "relevance": 0.7,
+          "reason": "Player interface with combo field"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.6,
+          "reason": "Re-export barrel file"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/score.ts",
+          "description": "Add addComboScore function with multiplier formula",
+          "key_content": "1 + Math.floor(streak / 5) * 0.5"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export addComboScore",
+          "key_content": "addComboScore"
+        }
+      ],
+      "hard_negatives": ["src/systems/enemyAI.ts", "src/systems/pause.ts"]
+    },
+    "task_04": {
+      "title": "Enemy Patrol Mode",
+      "relevant_files_ranked": [
+        "src/systems/enemyAI.ts",
+        "src/core/gameState.ts",
+        "src/index.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/systems/enemyAI.ts",
+          "start_line": 1,
+          "end_line": 74,
+          "relevance": 1.0,
+          "reason": "Enemy AI system — patrol mode must be implemented here"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 11,
+          "end_line": 18,
+          "relevance": 0.9,
+          "reason": "Enemy interface — patrolRadius must be added"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.5,
+          "reason": "Re-export barrel file"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/core/gameState.ts",
+          "description": "Add patrolRadius to Enemy interface",
+          "key_content": "patrolRadius: number"
+        },
+        {
+          "file": "src/systems/enemyAI.ts",
+          "description": "Implement patrol mode logic and chaseThreshold parameter",
+          "key_content": "chaseThreshold"
+        }
+      ],
+      "hard_negatives": ["src/systems/score.ts", "src/systems/save.ts"]
+    },
+    "task_05": {
+      "title": "Save System V2",
+      "relevant_files_ranked": [
+        "src/systems/save.ts",
+        "src/index.ts",
+        "src/core/gameState.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/systems/save.ts",
+          "start_line": 1,
+          "end_line": 63,
+          "relevance": 1.0,
+          "reason": "Save system — V2 format must be implemented here"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 28,
+          "end_line": 42,
+          "relevance": 0.6,
+          "reason": "GameState interface for serialization context"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.5,
+          "reason": "Re-export barrel — SaveDataV2 must be exported"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/save.ts",
+          "description": "Add SaveDataV2 with metadata, update serialize/deserialize",
+          "key_content": "SaveDataV2"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export SaveDataV2",
+          "key_content": "SaveDataV2"
+        }
+      ],
+      "hard_negatives": ["src/systems/input.ts", "src/systems/enemyAI.ts"]
+    },
+    "task_06": {
+      "title": "Difficulty Affects Enemy Speed",
+      "relevant_files_ranked": [
+        "src/systems/enemyAI.ts",
+        "src/core/gameState.ts",
+        "src/index.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/systems/enemyAI.ts",
+          "start_line": 1,
+          "end_line": 74,
+          "relevance": 1.0,
+          "reason": "Enemy AI — speed multiplier must be added here"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 37,
+          "end_line": 42,
+          "relevance": 0.7,
+          "reason": "GameSettings.difficulty used in formula"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.5,
+          "reason": "Re-export barrel"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/enemyAI.ts",
+          "description": "Add getDifficultySpeedMultiplier and integrate into movement",
+          "key_content": "0.5 + (difficulty / 10) * 1.5"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export getDifficultySpeedMultiplier",
+          "key_content": "getDifficultySpeedMultiplier"
+        }
+      ],
+      "hard_negatives": ["src/systems/score.ts", "src/systems/pause.ts"]
+    },
+    "task_07": {
+      "title": "Event Log System",
+      "relevant_files_ranked": [
+        "src/systems/eventLog.ts",
+        "src/core/gameState.ts",
+        "src/index.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 28,
+          "end_line": 35,
+          "relevance": 0.9,
+          "reason": "GameState interface — eventLog field must be added"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 56,
+          "end_line": 84,
+          "relevance": 0.8,
+          "reason": "createInitialState — must include eventLog initialization"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.7,
+          "reason": "Re-export barrel — must export new file"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/eventLog.ts",
+          "description": "Create new file with GameEvent, createEventLog, logEvent, getRecentEvents",
+          "key_content": "GameEvent"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "description": "Add eventLog to GameState, update createInitialState",
+          "key_content": "eventLog"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export eventLog module",
+          "key_content": "eventLog"
+        }
+      ],
+      "hard_negatives": ["src/systems/save.ts", "src/systems/input.ts"]
+    },
+    "task_08": {
+      "title": "Ability Cooldown Mechanism",
+      "relevant_files_ranked": [
+        "src/systems/cooldown.ts",
+        "src/index.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.7,
+          "reason": "Re-export barrel — must export cooldown module"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 1,
+          "end_line": 42,
+          "relevance": 0.4,
+          "reason": "Reference for type patterns"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/cooldown.ts",
+          "description": "Create new file with CooldownEntry, manager functions",
+          "key_content": "CooldownEntry"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export cooldown module",
+          "key_content": "cooldown"
+        }
+      ],
+      "hard_negatives": ["src/systems/pause.ts", "src/systems/score.ts"]
+    },
+    "task_09": {
+      "title": "Deterministic RNG",
+      "relevant_files_ranked": [
+        "src/systems/rng.ts",
+        "src/index.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.7,
+          "reason": "Re-export barrel — must export rng module"
+        },
+        {
+          "file": "src/systems/enemyAI.ts",
+          "start_line": 1,
+          "end_line": 20,
+          "relevance": 0.3,
+          "reason": "Potential consumer of RNG for enemy decisions"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/systems/rng.ts",
+          "description": "Create new file with mulberry32, createRNG, randomInt, randomChoice",
+          "key_content": "mulberry32"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export rng module",
+          "key_content": "rng"
+        }
+      ],
+      "hard_negatives": ["src/systems/save.ts", "src/systems/score.ts"]
+    },
+    "task_10": {
+      "title": "Settings Validation",
+      "relevant_files_ranked": [
+        "src/core/gameState.ts",
+        "src/index.ts"
+      ],
+      "relevant_chunks": [
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 37,
+          "end_line": 42,
+          "relevance": 1.0,
+          "reason": "GameSettings interface — validation target"
+        },
+        {
+          "file": "src/core/gameState.ts",
+          "start_line": 56,
+          "end_line": 84,
+          "relevance": 0.8,
+          "reason": "createInitialState — default values reference"
+        },
+        {
+          "file": "src/index.ts",
+          "start_line": 1,
+          "end_line": 21,
+          "relevance": 0.6,
+          "reason": "Re-export barrel"
+        }
+      ],
+      "expected_diff_hunks": [
+        {
+          "file": "src/core/gameState.ts",
+          "description": "Add validateSettings function",
+          "key_content": "validateSettings"
+        },
+        {
+          "file": "src/index.ts",
+          "description": "Export validateSettings",
+          "key_content": "validateSettings"
+        }
+      ],
+      "hard_negatives": ["src/systems/save.ts", "src/systems/input.ts"]
+    }
+  }
+}

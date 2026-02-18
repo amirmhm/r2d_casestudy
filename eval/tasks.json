@@ -1,0 +1,227 @@
+{
+  "version": "2.0.0",
+  "evaluation_phases": {
+    "phase1_rag": { "name": "RAG Pipeline & Retrieval Quality", "weight": 0.30 },
+    "phase2_prompting": { "name": "Prompt Engineering & Structured Output", "weight": 0.20 },
+    "phase3_finetune": { "name": "Fine-Tuning & Training Data Curation", "weight": 0.30 },
+    "phase4_analytics": { "name": "Analytics, Experiment Design & Failure Analysis", "weight": 0.20 }
+  },
+  "tasks": [
+    {
+      "id": "task_01",
+      "title": "Pause Toggle Behavior",
+      "difficulty": "easy",
+      "phase": "phase2_prompting",
+      "gold_label_id": "task_01",
+      "user_request": "Add a `togglePause(state)` function to the pause system that flips the paused boolean. When paused, the `addScore` function must return the state unchanged (it already does this). Export `togglePause` from the index.",
+      "acceptance_criteria": [
+        "togglePause function exists and is exported",
+        "togglePause(unpaused_state).paused === true",
+        "togglePause(paused_state).paused === false",
+        "togglePause is a pure function (returns new state)"
+      ],
+      "suggested_files": [
+        "src/systems/pause.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_01"
+    },
+    {
+      "id": "task_02",
+      "title": "Input Remapping",
+      "difficulty": "easy",
+      "phase": "phase2_prompting",
+      "gold_label_id": "task_02",
+      "user_request": "Add a `remapKey(state, action, newKeyCode)` function to the input system that updates the input mapping for the given action to the new key code. It should return a new GameState. If the action doesn't exist in the input map, return the state unchanged. Export from index.",
+      "acceptance_criteria": [
+        "remapKey function exists and is exported",
+        "remapKey(state, 'jump', 'Space') sets inputMap.jump to 'Space'",
+        "remapKey(state, 'nonexistent', 'X') returns state unchanged",
+        "Original state is not mutated"
+      ],
+      "suggested_files": [
+        "src/systems/input.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_02"
+    },
+    {
+      "id": "task_03",
+      "title": "Score Combo Multiplier",
+      "difficulty": "medium",
+      "phase": "phase2_prompting",
+      "gold_label_id": "task_03",
+      "user_request": "Add a `addComboScore(state, basePoints, streak)` function to the score system. The combo multiplier is `1 + Math.floor(streak / 5) * 0.5` (capped at 3.0x). The final points are `Math.round(basePoints * multiplier)`. Also update the player's combo field to the given streak value. If paused, return state unchanged. Export from index.",
+      "acceptance_criteria": [
+        "addComboScore function exists and is exported",
+        "streak=0 gives 1.0x multiplier",
+        "streak=5 gives 1.5x multiplier",
+        "streak=10 gives 2.0x multiplier",
+        "streak=20 gives 3.0x multiplier (capped)",
+        "streak=100 still gives 3.0x (cap works)",
+        "Player combo field is updated to streak value",
+        "Returns unchanged state when paused"
+      ],
+      "suggested_files": [
+        "src/systems/score.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_03"
+    },
+    {
+      "id": "task_04",
+      "title": "Enemy Patrol Mode",
+      "difficulty": "medium",
+      "phase": "phase1_rag",
+      "gold_label_id": "task_04",
+      "user_request": "Modify `updateEnemyAI` so that enemies have a patrol mode. Add a `patrolRadius` property (number, default 50) to the Enemy interface. When an enemy is in 'idle' or 'patrol' state and the player is farther than 100 units away, the enemy should switch to 'patrol' state instead of 'idle'. The patrol behavior itself just needs to set state to 'patrol'. Also add a `chaseThreshold` parameter (default 100) to the `updateEnemyAI` function signature. Update createEnemy to include patrolRadius.",
+      "acceptance_criteria": [
+        "Enemy interface has patrolRadius: number",
+        "createEnemy returns enemy with patrolRadius (default 50)",
+        "updateEnemyAI accepts optional chaseThreshold parameter",
+        "Enemy far from player enters 'patrol' state instead of 'idle'",
+        "Enemy within chaseThreshold enters 'chase' state",
+        "Custom chaseThreshold value is respected"
+      ],
+      "suggested_files": [
+        "src/core/gameState.ts",
+        "src/systems/enemyAI.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_04"
+    },
+    {
+      "id": "task_05",
+      "title": "Save System V2 with Backward Compatibility",
+      "difficulty": "medium",
+      "phase": "phase1_rag",
+      "gold_label_id": "task_05",
+      "user_request": "Update the save system to support version 2. Add a `SaveDataV2` interface that extends the save data with a `metadata` field: `{ playTime: number; saveSlot: number }`. Update `serializeState` to produce version 2 saves with default metadata (playTime: 0, saveSlot: 0). Update `deserializeState` to handle both v1 and v2 saves — v1 saves should be loaded with default metadata values. Update getCurrentVersion to return 2. Export SaveDataV2.",
+      "acceptance_criteria": [
+        "SaveDataV2 interface exists with metadata field",
+        "serializeState produces version: 2 saves",
+        "deserializeState handles version 1 saves (backward compat)",
+        "deserializeState handles version 2 saves",
+        "getCurrentVersion returns 2",
+        "v1 saves loaded get default metadata values"
+      ],
+      "suggested_files": [
+        "src/systems/save.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_05"
+    },
+    {
+      "id": "task_06",
+      "title": "Difficulty Affects Enemy Speed",
+      "difficulty": "medium",
+      "phase": "phase3_finetune",
+      "gold_label_id": "task_06",
+      "user_request": "Add a `getDifficultySpeedMultiplier(difficulty)` function to enemyAI that returns a speed multiplier based on difficulty (1-10). Formula: `0.5 + (difficulty / 10) * 1.5`. So difficulty 1 = 0.65x, difficulty 5 = 1.25x, difficulty 10 = 2.0x. Modify `updateEnemyAI` to apply this multiplier when moving enemies (multiply the movement by the multiplier using state.settings.difficulty). Export the new function from index.",
+      "acceptance_criteria": [
+        "getDifficultySpeedMultiplier function exists and is exported",
+        "difficulty 1 returns ~0.65",
+        "difficulty 5 returns 1.25",
+        "difficulty 10 returns 2.0",
+        "updateEnemyAI applies difficulty multiplier to enemy movement",
+        "Higher difficulty makes enemies move faster toward player"
+      ],
+      "suggested_files": [
+        "src/systems/enemyAI.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_06"
+    },
+    {
+      "id": "task_07",
+      "title": "Event Log System",
+      "difficulty": "hard",
+      "phase": "phase3_finetune",
+      "gold_label_id": "task_07",
+      "user_request": "Add a new file `src/systems/eventLog.ts` with an event logging system. Define a `GameEvent` interface with `{ type: string; timestamp: number; data?: unknown }`. Add functions: `createEventLog(maxSize?: number)` returning `{ events: GameEvent[]; maxSize: number }`, `logEvent(log, event)` that adds an event and trims to maxSize (FIFO), and `getRecentEvents(log, count)` returning the last N events. Also add `eventLog` field to GameState (initialized with createEventLog(50)). Export everything from index.",
+      "acceptance_criteria": [
+        "eventLog.ts file exists with GameEvent interface",
+        "createEventLog returns proper structure with default maxSize 50",
+        "logEvent adds events and trims when exceeding maxSize",
+        "getRecentEvents returns last N events",
+        "GameState has eventLog field",
+        "createInitialState includes eventLog",
+        "All new items exported from index"
+      ],
+      "suggested_files": [
+        "src/systems/eventLog.ts",
+        "src/core/gameState.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_07"
+    },
+    {
+      "id": "task_08",
+      "title": "Ability Cooldown Mechanism",
+      "difficulty": "medium",
+      "phase": "phase3_finetune",
+      "gold_label_id": "task_08",
+      "user_request": "Add a new file `src/systems/cooldown.ts` with a cooldown mechanism. Define `CooldownEntry` as `{ name: string; durationTicks: number; remainingTicks: number }`. Functions: `createCooldownManager()` returns `CooldownEntry[]`, `startCooldown(manager, name, durationTicks)` adds/resets a cooldown entry, `tickCooldowns(manager)` decrements all remaining by 1 (min 0), `isOnCooldown(manager, name)` returns boolean (remaining > 0), `getCooldownRemaining(manager, name)` returns remaining ticks or 0. Export from index.",
+      "acceptance_criteria": [
+        "cooldown.ts file exists",
+        "CooldownEntry interface has name, durationTicks, remainingTicks",
+        "createCooldownManager returns empty array",
+        "startCooldown adds new entry or resets existing",
+        "tickCooldowns decrements all remainingTicks by 1",
+        "tickCooldowns does not go below 0",
+        "isOnCooldown returns true when remaining > 0",
+        "getCooldownRemaining returns correct remaining or 0"
+      ],
+      "suggested_files": [
+        "src/systems/cooldown.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_08"
+    },
+    {
+      "id": "task_09",
+      "title": "Deterministic RNG for Enemy Decisions",
+      "difficulty": "hard",
+      "phase": "phase4_analytics",
+      "gold_label_id": "task_09",
+      "user_request": "Add a new file `src/systems/rng.ts` with a seeded pseudo-random number generator. Implement a simple mulberry32 PRNG: `createRNG(seed)` returns a function that when called returns the next number in [0, 1). Also add `randomInt(rng, min, max)` that returns an integer in [min, max] inclusive. Add `randomChoice(rng, array)` that picks a random element. The RNG must be deterministic — same seed always produces same sequence. Export from index.",
+      "acceptance_criteria": [
+        "rng.ts file exists",
+        "createRNG returns a callable that produces numbers in [0, 1)",
+        "Same seed produces identical sequence",
+        "Different seeds produce different sequences",
+        "randomInt returns integers in [min, max] inclusive",
+        "randomChoice picks from array deterministically",
+        "All functions exported from index"
+      ],
+      "suggested_files": [
+        "src/systems/rng.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_09"
+    },
+    {
+      "id": "task_10",
+      "title": "Settings Validation with Safe Defaults",
+      "difficulty": "medium",
+      "phase": "phase4_analytics",
+      "gold_label_id": "task_10",
+      "user_request": "Add a `validateSettings(settings)` function to gameState.ts that validates a partial GameSettings object and fills in safe defaults. Rules: difficulty must be 1-10 (default 5), soundVolume must be 0-1 (default 0.8), musicVolume must be 0-1 (default 0.6), showFps must be boolean (default false). If a value is out of range or wrong type, replace with default. Return a complete GameSettings. Export from index.",
+      "acceptance_criteria": [
+        "validateSettings function exists and is exported",
+        "Empty object returns all defaults",
+        "Valid values are preserved",
+        "Out-of-range difficulty is replaced with default",
+        "Negative volume is replaced with default",
+        "Volume > 1 is replaced with default",
+        "Non-boolean showFps is replaced with default",
+        "Returns a complete GameSettings object"
+      ],
+      "suggested_files": [
+        "src/core/gameState.ts",
+        "src/index.ts"
+      ],
+      "check_id": "task_10"
+    }
+  ]
+}
