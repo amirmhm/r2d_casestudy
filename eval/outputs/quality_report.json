@@ -1,0 +1,29 @@
+{
+  "total_examples": 50,
+  "valid_examples": 50,
+  "invalid_examples": 0,
+  "avg_input_tokens": 7,
+  "avg_output_tokens": 47,
+  "task_distribution": {
+    "task_01": 5,
+    "task_02": 5,
+    "task_03": 5,
+    "task_04": 5,
+    "task_05": 5,
+    "task_06": 5,
+    "task_07": 5,
+    "task_08": 5,
+    "task_09": 5,
+    "task_10": 5
+  },
+  "quality_distribution": {
+    "gold": 20,
+    "bad": 18,
+    "partial": 12
+  },
+  "train_size": 40,
+  "val_size": 10,
+  "gold_train_examples": 18,
+  "export_format": "OpenAI chat completion (messages array with system/user/assistant roles)",
+  "stratification": "by_task (80/20 split per task)"
+}

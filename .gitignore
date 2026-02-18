@@ -14,9 +14,18 @@ __pycache__/
 venv/
 env/
 
-# Eval outputs
-eval/outputs/*
+# Eval outputs (ignore run dirs but keep deliverables)
+eval/outputs/run_*/
 !eval/outputs/.gitkeep
+!eval/outputs/phase_check_results.txt
+!eval/outputs/eval_run_demo.txt
+!eval/outputs/finetune_train.jsonl
+!eval/outputs/finetune_train_all.jsonl
+!eval/outputs/finetune_val.jsonl
+!eval/outputs/finetune_config.json
+!eval/outputs/quality_report.json
+!eval/outputs/failure_analysis.json
+!eval/outputs/experiment_keyword_vs_hybrid.json
 
 # Environment
 .env

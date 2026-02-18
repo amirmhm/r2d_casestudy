@@ -1,0 +1,39 @@
+{
+  "config": {
+    "name": "Keyword vs Hybrid Retrieval Strategy",
+    "variant_a_name": "keyword",
+    "variant_b_name": "hybrid",
+    "metric_name": "pass_rate",
+    "n_runs": 5,
+    "significance_level": 0.05
+  },
+  "variant_a_scores": [
+    30.0,
+    40.0,
+    20.0,
+    30.0,
+    40.0
+  ],
+  "variant_b_scores": [
+    50.0,
+    60.0,
+    40.0,
+    60.0,
+    50.0
+  ],
+  "variant_a_mean": 32.0,
+  "variant_b_mean": 52.0,
+  "variant_a_std": 8.366600265340756,
+  "variant_b_std": 8.366600265340756,
+  "statistical_result": {
+    "t_stat": -6.324555320336759,
+    "p_value": 2.539628507491898e-10,
+    "cohens_d": -2.390457218668787,
+    "is_significant": true,
+    "confidence_interval": [
+      -26.198064213930024,
+      -13.801935786069976
+    ]
+  },
+  "summary": "keyword mean=32.000 (std=8.367), hybrid mean=52.000 (std=8.367). Difference is statistically significant (p=0.0000). Effect size (Cohen's d): -2.390 (large)."
+}

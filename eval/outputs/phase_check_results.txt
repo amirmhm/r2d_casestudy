@@ -1,0 +1,171 @@
+=== Baseline Sanity Check ===
+
+1. Checking directory...
+   OK: Directory structure valid
+2. Building project...
+   OK: Build succeeded
+3. Checking exports...
+   OK: 21 exports verified
+4. Running functional checks...
+   OK: All functional checks passed
+
+=== Baseline Sanity: ALL PASS ===
+=== Phase 1: RAG Pipeline & Retrieval Quality ===
+
+1. BM25 Implementation:
+  [PASS] bm25.py exists
+  [PASS] BM25 has tokenize function
+  [PASS] BM25 has build_bm25_index function
+  [PASS] BM25 has scoring function
+  [PASS] BM25 has retrieve function
+  [PASS] BM25 uses IDF computation
+
+2. Hybrid Retrieval:
+  [PASS] hybrid.py exists
+  [PASS] Hybrid has RRF function
+  [PASS] Hybrid has weighted combination
+  [PASS] Hybrid has main entry point
+
+3. Reranker Module:
+  [PASS] reranker.py exists
+  [PASS] Reranker class exists
+  [PASS] NoOp reranker exists
+  [PASS] Factory function exists
+
+4. Retrieval Metrics:
+  [PASS] metrics/ directory exists
+  [PASS] retrieval_metrics.py exists
+  [PASS] precision_at_k implemented
+  [PASS] recall_at_k implemented
+  [PASS] mrr implemented
+  [PASS] ndcg_at_k implemented
+  [PASS] hit_rate implemented
+
+5. AST-Aware Chunking in Indexer:
+  [PASS] indexer.py exists
+  [PASS] AST boundary detection
+  [PASS] Multiple chunk strategies supported
+  [PASS] Imports extraction
+
+6. Multi-Strategy Retrieval:
+  [PASS] retriever.py exists
+  [PASS] BM25 strategy supported
+  [PASS] Hybrid strategy supported
+  [PASS] Embedding strategy supported
+
+=== Phase 1 Results: 29/29 checks passed ===
+Estimated Phase 1 Score: 30/30 points
+=== Phase 2: Prompt Engineering & Structured Output ===
+
+1. Structured Output Models:
+  [PASS] structured_output.py exists
+  [PASS] PatchAnalysis model exists
+  [PASS] PatchResponse model exists
+  [PASS] AnalysisResponse model exists
+  [PASS] Models use Pydantic BaseModel
+  [PASS] Diff validation exists
+
+2. JSON Extraction:
+  [PASS] extract_json_from_response exists
+  [PASS] Code block extraction supported
+  [PASS] Brace matching extraction
+  [PASS] parse_structured_response exists
+  [PASS] JSON schema builder exists
+
+3. Chain-of-Thought Templates:
+  [PASS] CoT patch template exists
+  [PASS] CoT analysis template exists
+  [PASS] CoT patch builder function
+  [PASS] CoT analysis builder function
+  [PASS] Step-by-step reasoning in template
+
+4. Prompt Quality:
+  [PASS] prompts.py exists
+  [PASS] System prompt exists
+  [PASS] User prompt template exists
+  [PASS] Patch metrics module exists
+  [PASS] Patch metrics has scoring functions
+
+=== Phase 2 Results: 21/21 checks passed ===
+Estimated Phase 2 Score: 20/20 points
+=== Phase 3: Fine-Tuning & Training Data Curation ===
+
+1. Training Data Format:
+  [PASS] examples.jsonl exists
+  [PASS] examples.jsonl has valid JSONL format
+  [PASS] examples.jsonl has correct schema
+  [PASS] examples cover multiple tasks
+  [PASS] examples include quality labels
+  [PASS] hard_negatives.jsonl exists
+  [PASS] hard_negatives has valid format
+
+2. Data Curator Module:
+  [PASS] data_curator.py exists
+  [PASS] DataCurator class exists
+  [PASS] load_examples method exists
+  [PASS] validate_examples method exists
+  [PASS] format_for_openai method exists
+
+3. Train/Val Split:
+  [PASS] split_train_val method exists
+  [PASS] Stratification support
+  [PASS] TrainValSplit dataclass exists
+
+4. Fine-Tune Trainer:
+  [PASS] trainer.py exists
+  [PASS] FineTuneTrainer class exists
+  [PASS] FineTuneConfig dataclass exists
+  [PASS] upload_training_file method exists
+  [PASS] create_job method exists
+  [PASS] get_job_status method exists
+  [PASS] OpenAI API integration
+
+5. Model Evaluator:
+  [PASS] evaluator.py exists
+  [PASS] ModelEvaluator class exists
+  [PASS] Comparison report generation
+  [PASS] Per-task breakdown
+
+6. Hyperparameter Documentation:
+  [PASS] Trainer has hyperparameter settings
+  [PASS] Hyperparameter documentation/comments
+  [PASS] CLI finetune commands exist
+
+=== Phase 3 Results: 29/29 checks passed ===
+Estimated Phase 3 Score: 30/30 points
+=== Phase 4: Analytics, Experiment Design & Failure Analysis ===
+
+1. Failure Attribution:
+  [PASS] failure_analyzer.py exists
+  [PASS] FailureAnalyzer class exists
+  [PASS] Failure classification function
+  [PASS] Multiple failure categories defined
+  [PASS] analyze_results method
+
+2. Root Cause Analysis:
+  [PASS] Pattern identification
+  [PASS] Recommendation generation
+  [PASS] Report export function
+  [PASS] Print report function
+  [PASS] Correlation analysis
+
+3. A/B Experiment Framework:
+  [PASS] experiment.py exists
+  [PASS] ExperimentRunner class exists
+  [PASS] ExperimentConfig dataclass exists
+  [PASS] Statistical significance test (t-test)
+  [PASS] Effect size computation (Cohen's d)
+  [PASS] P-value computation
+  [PASS] StatisticalResult dataclass
+
+4. Report Generation:
+  [PASS] ExperimentReport dataclass
+  [PASS] Report generation function
+  [PASS] Report export to JSON
+  [PASS] CLI analyze command exists
+  [PASS] CLI report command exists
+  [PASS] Scoring rubric exists
+  [PASS] Gold labels exist
+
+=== Phase 4 Results: 24/24 checks passed ===
+Estimated Phase 4 Score: 20/20 points

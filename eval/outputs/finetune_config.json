@@ -1,0 +1,14 @@
+{
+  "model": "gpt-4o-mini-2024-07-18",
+  "suffix": "ggf-case",
+  "hyperparameters": {
+    "n_epochs": "auto",
+    "batch_size": "auto",
+    "learning_rate_multiplier": "auto"
+  },
+  "training_file": "finetune_train.jsonl",
+  "training_examples": 18,
+  "validation_file": "finetune_val.jsonl",
+  "validation_examples": 2,
+  "notes": "Gold-quality examples only, stratified 80/20 split by task. Auto hyperparameters recommended for small datasets."
+}

@@ -1,0 +1,108 @@
+{
+  "total_tasks": 10,
+  "total_failures": 4,
+  "total_successes": 6,
+  "failure_rate": 40.0,
+  "category_counts": {
+    "CHECK_FAILURE": 1,
+    "BUILD_FAILURE": 1,
+    "APPLY_FAILURE": 2
+  },
+  "classified_failures": [
+    {
+      "task_id": "task_04",
+      "category": "CHECK_FAILURE",
+      "error_message": "Check failed: chaseThreshold parameter not accepted",
+      "details": {
+        "patch_applied": true,
+        "build_ok": true,
+        "checks_passed": false
+      }
+    },
+    {
+      "task_id": "task_05",
+      "category": "BUILD_FAILURE",
+      "error_message": "Build: type error in save.ts",
+      "details": {
+        "patch_applied": true,
+        "build_ok": false,
+        "checks_passed": false
+      }
+    },
+    {
+      "task_id": "task_07",
+      "category": "APPLY_FAILURE",
+      "error_message": "Patch apply: hunk FAILED -- saving rejects",
+      "details": {
+        "patch_applied": false,
+        "build_ok": false,
+        "checks_passed": false
+      }
+    },
+    {
+      "task_id": "task_08",
+      "category": "APPLY_FAILURE",
+      "error_message": "Patch apply: hunk FAILED -- context mismatch",
+      "details": {
+        "patch_applied": false,
+        "build_ok": false,
+        "checks_passed": false
+      }
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_name": "Cluster: CHECK_FAILURE",
+      "count": 1,
+      "affected_tasks": [
+        "task_04"
+      ],
+      "description": "1 task(s) failed due to check failure."
+    },
+    {
+      "pattern_name": "Cluster: BUILD_FAILURE",
+      "count": 1,
+      "affected_tasks": [
+        "task_05"
+      ],
+      "description": "1 task(s) failed due to build failure."
+    },
+    {
+      "pattern_name": "Cluster: APPLY_FAILURE",
+      "count": 2,
+      "affected_tasks": [
+        "task_07",
+        "task_08"
+      ],
+      "description": "2 task(s) failed due to apply failure."
+    },
+    {
+      "pattern_name": "Error keyword: 'hunk'",
+      "count": 2,
+      "affected_tasks": [
+        "task_07",
+        "task_08"
+      ],
+      "description": "The keyword 'hunk' appeared in 2 failure error messages."
+    },
+    {
+      "pattern_name": "Error keyword: 'patch'",
+      "count": 2,
+      "affected_tasks": [
+        "task_07",
+        "task_08"
+      ],
+      "description": "The keyword 'patch' appeared in 2 failure error messages."
+    }
+  ],
+  "recommendations": [
+    "Fix patch application failures: ensure diffs use correct file paths and line numbers. Consider adding diff validation before application.",
+    "Resolve build failures: generated patches likely introduce TypeScript errors. Add type-checking hints to the prompt or use CoT reasoning.",
+    "Address check failures: patches compile but don't pass acceptance criteria. Review task requirements and improve prompt specificity."
+  ],
+  "correlation_analysis": {
+    "success_rate_by_difficulty": {
+      "unknown": 60.0
+    }
+  }
+}
