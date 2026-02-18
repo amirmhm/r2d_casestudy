@@ -191,14 +191,22 @@ def retrieve(
     TODO: Implement "bm25", "hybrid", and "embedding" strategies for Phase 1.
     """
     if strategy == "bm25":
-        # TODO: Implement BM25 retrieval path
-        console.print("[yellow]BM25 strategy not implemented, falling back to keyword[/yellow]")
-        return retrieve_keyword(index, query, top_k, file_filter)
+        from .bm25 import retrieve_bm25
+        bm25_results = retrieve_bm25(index, query, top_k=top_k, file_filter=file_filter)
+        return [
+            RetrievalResult(chunk=chunk, score=score, method="bm25")
+            for chunk, score in bm25_results
+        ]
 
     elif strategy == "hybrid":
-        # TODO: Implement hybrid retrieval path
-        console.print("[yellow]Hybrid strategy not implemented, falling back to keyword[/yellow]")
-        return retrieve_keyword(index, query, top_k, file_filter)
+        from .hybrid import hybrid_retrieve
+        return hybrid_retrieve(
+            index, query,
+            top_k=top_k,
+            file_filter=file_filter,
+            use_embeddings=use_embeddings,
+            embedding_model=embedding_model,
+        )
 
     elif strategy == "embedding":
         if use_embeddings:

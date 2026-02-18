@@ -77,9 +77,51 @@ def extract_imports(content: str) -> list[str]:
 
 def _find_ast_boundaries(lines: list[str]) -> list[tuple[int, int, str]]:
     """Find function/class/interface boundaries in TypeScript code.
-    Returns list of (start_line_0indexed, end_line_0indexed, symbol_name)."""
-    # TODO: Implement
-    raise NotImplementedError("TODO")
+    Returns list of (start_line_0indexed, end_line_0indexed, symbol_name).
+
+    Uses brace-counting to detect boundaries of exported/non-exported
+    functions, classes, and interfaces.
+    """
+    boundaries: list[tuple[int, int, str]] = []
+    # Patterns that start a top-level block
+    block_re = re.compile(
+        r"^(?:export\s+)?(?:function|const|class|interface|type|enum)\s+"
+        r"([A-Za-z_$][A-Za-z0-9_$]*)"
+    )
+
+    i = 0
+    while i < len(lines):
+        stripped = lines[i].strip()
+        match = block_re.match(stripped)
+        if match:
+            symbol_name = match.group(1)
+            start = i
+
+            # Count braces to find the end of the block
+            brace_depth = 0
+            found_open = False
+            j = i
+            while j < len(lines):
+                for ch in lines[j]:
+                    if ch == "{":
+                        brace_depth += 1
+                        found_open = True
+                    elif ch == "}":
+                        brace_depth -= 1
+
+                if found_open and brace_depth <= 0:
+                    boundaries.append((start, j, symbol_name))
+                    i = j + 1
+                    break
+                j += 1
+            else:
+                # Reached end of file without closing brace — single-line or type alias
+                boundaries.append((start, min(i, len(lines) - 1), symbol_name))
+                i += 1
+        else:
+            i += 1
+
+    return boundaries
 
 
 def chunk_file(
@@ -182,9 +224,68 @@ def _chunk_ast(
     lang: str,
     file_imports: list[str],
 ) -> list[CodeChunk]:
-    """AST-aware chunking at function/class boundaries."""
-    # TODO: Implement
-    raise NotImplementedError("TODO")
+    """AST-aware chunking at function/class boundaries.
+
+    Falls back to the whole file as a single chunk when no boundaries
+    are detected (e.g. files that only contain imports/type aliases).
+    """
+    boundaries = _find_ast_boundaries(lines)
+
+    if not boundaries:
+        # No detectable blocks — return whole file as one chunk
+        content = "\n".join(lines)
+        return [
+            CodeChunk(
+                file_path=rel_path,
+                start_line=1,
+                end_line=len(lines),
+                content=content,
+                content_hash=hash_content(content),
+                language=lang,
+                symbols=extract_symbols(content),
+                imports=file_imports,
+                chunk_type="ast",
+            )
+        ]
+
+    chunks: list[CodeChunk] = []
+
+    # Include leading imports/comments before the first boundary
+    first_start = boundaries[0][0]
+    if first_start > 0:
+        preamble = "\n".join(lines[:first_start])
+        if preamble.strip():
+            chunks.append(
+                CodeChunk(
+                    file_path=rel_path,
+                    start_line=1,
+                    end_line=first_start,
+                    content=preamble,
+                    content_hash=hash_content(preamble),
+                    language=lang,
+                    symbols=extract_symbols(preamble),
+                    imports=file_imports,
+                    chunk_type="ast",
+                )
+            )
+
+    for start, end, _symbol in boundaries:
+        chunk_content = "\n".join(lines[start : end + 1])
+        chunks.append(
+            CodeChunk(
+                file_path=rel_path,
+                start_line=start + 1,
+                end_line=end + 1,
+                content=chunk_content,
+                content_hash=hash_content(chunk_content),
+                language=lang,
+                symbols=extract_symbols(chunk_content),
+                imports=file_imports,
+                chunk_type="ast",
+            )
+        )
+
+    return chunks
 
 
 # ============================================================================

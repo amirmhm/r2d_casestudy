@@ -1,0 +1,228 @@
+{
+  "version": "1.0.0",
+  "file_hashes": {
+    "core/gameState.ts": "2919fc5dfd60fd31",
+    "demo.ts": "c2987fd58e072709",
+    "index.ts": "4011d4ecdfabc1a6",
+    "systems/enemyAI.ts": "16aa0195f66fa750",
+    "systems/input.ts": "30d32d1899e98e79",
+    "systems/pause.ts": "ec8bf0d6993a13a0",
+    "systems/save.ts": "8a5a29ef66a01b90",
+    "systems/score.ts": "44d4212748f2a953"
+  },
+  "chunks": [
+    {
+      "file_path": "core/gameState.ts",
+      "start_line": 1,
+      "end_line": 60,
+      "content": "/**\n * Core game state shape and reducer.\n * All game state lives here \u2014 systems read and transform it.\n */\n\nexport interface Vec2 {\n  x: number;\n  y: number;\n}\n\nexport interface Enemy {\n  id: string;\n  position: Vec2;\n  speed: number;\n  hp: number;\n  maxHp: number;\n  state: \"idle\" | \"patrol\" | \"chase\" | \"dead\";\n}\n\nexport interface Player {\n  position: Vec2;\n  hp: number;\n  maxHp: number;\n  score: number;\n  combo: number;\n}\n\nexport interface GameState {\n  tick: number;\n  paused: boolean;\n  player: Player;\n  enemies: Enemy[];\n  inputMap: Record<string, string>;\n  settings: GameSettings;\n}\n\nexport interface GameSettings {\n  difficulty: number;       // 1-10 scale\n  soundVolume: number;      // 0.0-1.0\n  musicVolume: number;      // 0.0-1.0\n  showFps: boolean;\n}\n\nexport type GameAction =\n  | { type: \"TICK\" }\n  | { type: \"SET_PAUSED\"; paused: boolean }\n  | { type: \"ADD_SCORE\"; points: number }\n  | { type: \"SPAWN_ENEMY\"; enemy: Enemy }\n  | { type: \"REMOVE_ENEMY\"; enemyId: string }\n  | { type: \"MOVE_PLAYER\"; position: Vec2 }\n  | { type: \"UPDATE_SETTINGS\"; settings: Partial<GameSettings> };\n\n/**\n * Creates a fresh default game state.\n */\nexport function createInitialState(): GameState {\n  return {\n    tick: 0,\n    paused: false,\n    player: {",
+      "content_hash": "6f8645c5f95efd14",
+      "language": "typescript",
+      "symbols": [
+        "createInitialState"
+      ],
+      "imports": [],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "core/gameState.ts",
+      "start_line": 51,
+      "end_line": 110,
+      "content": "  | { type: \"UPDATE_SETTINGS\"; settings: Partial<GameSettings> };\n\n/**\n * Creates a fresh default game state.\n */\nexport function createInitialState(): GameState {\n  return {\n    tick: 0,\n    paused: false,\n    player: {\n      position: { x: 0, y: 0 },\n      hp: 100,\n      maxHp: 100,\n      score: 0,\n      combo: 0,\n    },\n    enemies: [],\n    inputMap: {\n      moveUp: \"KeyW\",\n      moveDown: \"KeyS\",\n      moveLeft: \"KeyA\",\n      moveRight: \"KeyD\",\n      jump: \"Space\",\n      attack: \"KeyJ\",\n      pause: \"Escape\",\n    },\n    settings: {\n      difficulty: 5,\n      soundVolume: 0.8,\n      musicVolume: 0.6,\n      showFps: false,\n    },\n  };\n}\n\n/**\n * Pure reducer \u2014 applies an action to state and returns new state.\n */\nexport function gameReducer(state: GameState, action: GameAction): GameState {\n  switch (action.type) {\n    case \"TICK\":\n      if (state.paused) return state;\n      return { ...state, tick: state.tick + 1 };\n\n    case \"SET_PAUSED\":\n      return { ...state, paused: action.paused };\n\n    case \"ADD_SCORE\":\n      return {\n        ...state,\n        player: {\n          ...state.player,\n          score: state.player.score + action.points,\n        },\n      };\n\n    case \"SPAWN_ENEMY\":\n      return { ...state, enemies: [...state.enemies, action.enemy] };\n\n    case \"REMOVE_ENEMY\":",
+      "content_hash": "a60926a334e1108e",
+      "language": "typescript",
+      "symbols": [
+        "createInitialState",
+        "gameReducer"
+      ],
+      "imports": [],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "core/gameState.ts",
+      "start_line": 101,
+      "end_line": 132,
+      "content": "        player: {\n          ...state.player,\n          score: state.player.score + action.points,\n        },\n      };\n\n    case \"SPAWN_ENEMY\":\n      return { ...state, enemies: [...state.enemies, action.enemy] };\n\n    case \"REMOVE_ENEMY\":\n      return {\n        ...state,\n        enemies: state.enemies.filter((e) => e.id !== action.enemyId),\n      };\n\n    case \"MOVE_PLAYER\":\n      return {\n        ...state,\n        player: { ...state.player, position: action.position },\n      };\n\n    case \"UPDATE_SETTINGS\":\n      return {\n        ...state,\n        settings: { ...state.settings, ...action.settings },\n      };\n\n    default:\n      return state;\n  }\n}\n",
+      "content_hash": "9ad146820dd0e819",
+      "language": "typescript",
+      "symbols": [],
+      "imports": [],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "demo.ts",
+      "start_line": 1,
+      "end_line": 60,
+      "content": "/**\n * Demo: runs a tiny 5-tick simulation and prints output.\n */\n\nimport {\n  createInitialState,\n  gameReducer,\n  createEnemy,\n  updateAllEnemies,\n  addScore,\n  serializeState,\n  deserializeState,\n  isPaused,\n  pauseGame,\n  getScore,\n  formatScore,\n} from \"./index.js\";\n\nfunction main(): void {\n  console.log(\"=== GGF Mini-Game Demo ===\\n\");\n\n  // Initialize\n  let state = createInitialState();\n  console.log(`Initial tick: ${state.tick}, score: ${getScore(state)}`);\n\n  // Spawn enemies\n  state = gameReducer(state, {\n    type: \"SPAWN_ENEMY\",\n    enemy: createEnemy(\"goblin_1\", 50, 50, 3),\n  });\n  state = gameReducer(state, {\n    type: \"SPAWN_ENEMY\",\n    enemy: createEnemy(\"goblin_2\", 200, 200, 1),\n  });\n  console.log(`Spawned ${state.enemies.length} enemies`);\n\n  // Run 5 ticks\n  for (let i = 0; i < 5; i++) {\n    state = gameReducer(state, { type: \"TICK\" });\n    state = updateAllEnemies(state);\n    state = addScore(state, 10);\n    console.log(\n      `  Tick ${state.tick}: score=${formatScore(getScore(state))}, ` +\n        `enemies=${state.enemies.map((e) => `${e.id}(${e.state})`).join(\", \")}`\n    );\n  }\n\n  // Test pause\n  state = pauseGame(state);\n  console.log(`\\nPaused: ${isPaused(state)}`);\n  state = addScore(state, 999); // Should NOT add (paused)\n  console.log(`Score after paused addScore: ${getScore(state)} (should be 50)`);\n\n  // Save & Load\n  const saved = serializeState(state);\n  const loaded = deserializeState(saved);\n  console.log(`\\nSave/Load roundtrip: ${loaded !== null ? \"OK\" : \"FAIL\"}`);\n  console.log(`Loaded score: ${loaded ? getScore(loaded) : \"N/A\"}`);\n\n  console.log(\"\\n=== Demo Complete ===\");",
+      "content_hash": "bfb59e1895c869cf",
+      "language": "typescript",
+      "symbols": [
+        "main"
+      ],
+      "imports": [
+        "./index.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "demo.ts",
+      "start_line": 51,
+      "end_line": 64,
+      "content": "  state = addScore(state, 999); // Should NOT add (paused)\n  console.log(`Score after paused addScore: ${getScore(state)} (should be 50)`);\n\n  // Save & Load\n  const saved = serializeState(state);\n  const loaded = deserializeState(saved);\n  console.log(`\\nSave/Load roundtrip: ${loaded !== null ? \"OK\" : \"FAIL\"}`);\n  console.log(`Loaded score: ${loaded ? getScore(loaded) : \"N/A\"}`);\n\n  console.log(\"\\n=== Demo Complete ===\");\n}\n\nmain();\n",
+      "content_hash": "c3d01907659ab955",
+      "language": "typescript",
+      "symbols": [],
+      "imports": [
+        "./index.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "index.ts",
+      "start_line": 1,
+      "end_line": 54,
+      "content": "/**\n * GGF Mini-Game \u2014 Public API\n * All exports for the game-system modules.\n */\n\n// Core\nexport {\n  createInitialState,\n  gameReducer,\n  type GameState,\n  type GameAction,\n  type GameSettings,\n  type Enemy,\n  type Player,\n  type Vec2,\n} from \"./core/gameState.js\";\n\n// Systems\nexport {\n  getKeyForAction,\n  getAllMappings,\n  isKeyBound,\n  getActionForKey,\n  type ActionName,\n} from \"./systems/input.js\";\n\nexport {\n  isPaused,\n  pauseGame,\n  resumeGame,\n} from \"./systems/pause.js\";\n\nexport {\n  addScore,\n  resetScore,\n  getScore,\n  formatScore,\n} from \"./systems/score.js\";\n\nexport {\n  updateEnemyAI,\n  updateAllEnemies,\n  createEnemy,\n  distance,\n} from \"./systems/enemyAI.js\";\n\nexport {\n  serializeState,\n  deserializeState,\n  isValidState,\n  getCurrentVersion,\n  type SaveData,\n} from \"./systems/save.js\";\n",
+      "content_hash": "4011d4ecdfabc1a6",
+      "language": "typescript",
+      "symbols": [
+        "GameState,",
+        "GameAction,",
+        "GameSettings,",
+        "Enemy,",
+        "Player,",
+        "Vec2,",
+        "ActionName,",
+        "SaveData,"
+      ],
+      "imports": [
+        "./core/gameState.js",
+        "./systems/input.js",
+        "./systems/pause.js",
+        "./systems/score.js",
+        "./systems/enemyAI.js",
+        "./systems/save.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "systems/enemyAI.ts",
+      "start_line": 1,
+      "end_line": 60,
+      "content": "/**\n * Enemy AI system.\n * Simple behavior functions for enemy entities.\n */\n\nimport type { Enemy, GameState, Vec2 } from \"../core/gameState.js\";\n\n/**\n * Calculates distance between two points.\n */\nexport function distance(a: Vec2, b: Vec2): number {\n  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);\n}\n\n/**\n * Updates a single enemy's AI for one tick.\n * Current behavior: if player is within 100 units, move toward player.\n * Otherwise, stay idle.\n */\nexport function updateEnemyAI(\n  enemy: Enemy,\n  state: GameState\n): Enemy {\n  if (enemy.state === \"dead\") return enemy;\n\n  const dist = distance(enemy.position, state.player.position);\n\n  if (dist < 100) {\n    // Move toward player\n    const dx = state.player.position.x - enemy.position.x;\n    const dy = state.player.position.y - enemy.position.y;\n    const norm = Math.sqrt(dx * dx + dy * dy) || 1;\n    return {\n      ...enemy,\n      state: \"chase\",\n      position: {\n        x: enemy.position.x + (dx / norm) * enemy.speed,\n        y: enemy.position.y + (dy / norm) * enemy.speed,\n      },\n    };\n  }\n\n  return { ...enemy, state: \"idle\" };\n}\n\n/**\n * Updates all enemies in the state.\n */\nexport function updateAllEnemies(state: GameState): GameState {\n  if (state.paused) return state;\n  return {\n    ...state,\n    enemies: state.enemies.map((e) => updateEnemyAI(e, state)),\n  };\n}\n\n/**\n * Creates a new enemy with default values.\n */\nexport function createEnemy(",
+      "content_hash": "495077ecc0832b34",
+      "language": "typescript",
+      "symbols": [
+        "distance",
+        "updateEnemyAI",
+        "updateAllEnemies",
+        "createEnemy"
+      ],
+      "imports": [
+        "../core/gameState.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "systems/enemyAI.ts",
+      "start_line": 51,
+      "end_line": 75,
+      "content": "  return {\n    ...state,\n    enemies: state.enemies.map((e) => updateEnemyAI(e, state)),\n  };\n}\n\n/**\n * Creates a new enemy with default values.\n */\nexport function createEnemy(\n  id: string,\n  x: number,\n  y: number,\n  speed: number = 2\n): Enemy {\n  return {\n    id,\n    position: { x, y },\n    speed,\n    hp: 50,\n    maxHp: 50,\n    state: \"idle\",\n  };\n}\n",
+      "content_hash": "c105fb04973c34ca",
+      "language": "typescript",
+      "symbols": [
+        "createEnemy"
+      ],
+      "imports": [
+        "../core/gameState.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "systems/input.ts",
+      "start_line": 1,
+      "end_line": 58,
+      "content": "/**\n * Input mapping system.\n * Maps logical actions to physical keys.\n */\n\nimport type { GameState } from \"../core/gameState.js\";\n\nexport type ActionName =\n  | \"moveUp\"\n  | \"moveDown\"\n  | \"moveLeft\"\n  | \"moveRight\"\n  | \"jump\"\n  | \"attack\"\n  | \"pause\";\n\n/**\n * Returns the current key bound to a logical action.\n */\nexport function getKeyForAction(\n  state: GameState,\n  action: ActionName\n): string | undefined {\n  return state.inputMap[action];\n}\n\n/**\n * Returns all current input mappings.\n */\nexport function getAllMappings(\n  state: GameState\n): Record<string, string> {\n  return { ...state.inputMap };\n}\n\n/**\n * Checks if a given key code is already bound to any action.\n */\nexport function isKeyBound(\n  state: GameState,\n  keyCode: string\n): boolean {\n  return Object.values(state.inputMap).includes(keyCode);\n}\n\n/**\n * Returns the action name bound to a specific key, if any.\n */\nexport function getActionForKey(\n  state: GameState,\n  keyCode: string\n): string | undefined {\n  for (const [action, key] of Object.entries(state.inputMap)) {\n    if (key === keyCode) return action;\n  }\n  return undefined;\n}\n",
+      "content_hash": "30d32d1899e98e79",
+      "language": "typescript",
+      "symbols": [
+        "getKeyForAction",
+        "getAllMappings",
+        "isKeyBound",
+        "getActionForKey"
+      ],
+      "imports": [
+        "../core/gameState.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "systems/pause.ts",
+      "start_line": 1,
+      "end_line": 28,
+      "content": "/**\n * Pause management system.\n * Controls game pause state.\n */\n\nimport type { GameState } from \"../core/gameState.js\";\n\n/**\n * Returns whether the game is currently paused.\n */\nexport function isPaused(state: GameState): boolean {\n  return state.paused;\n}\n\n/**\n * Returns a new state with paused set to true.\n */\nexport function pauseGame(state: GameState): GameState {\n  return { ...state, paused: true };\n}\n\n/**\n * Returns a new state with paused set to false.\n */\nexport function resumeGame(state: GameState): GameState {\n  return { ...state, paused: false };\n}\n",
+      "content_hash": "ec8bf0d6993a13a0",
+      "language": "typescript",
+      "symbols": [
+        "isPaused",
+        "pauseGame",
+        "resumeGame"
+      ],
+      "imports": [
+        "../core/gameState.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "systems/save.ts",
+      "start_line": 1,
+      "end_line": 60,
+      "content": "/**\n * Save / Load system.\n * Serializes and deserializes game state to JSON.\n */\n\nimport type { GameState } from \"../core/gameState.js\";\nimport { createInitialState } from \"../core/gameState.js\";\n\nexport interface SaveData {\n  version: 1;\n  timestamp: number;\n  state: GameState;\n}\n\n/**\n * Serializes a game state into a save-data JSON string.\n */\nexport function serializeState(state: GameState): string {\n  const saveData: SaveData = {\n    version: 1,\n    timestamp: Date.now(),\n    state,\n  };\n  return JSON.stringify(saveData);\n}\n\n/**\n * Deserializes a save-data JSON string back into game state.\n * Returns null if the data is invalid.\n */\nexport function deserializeState(json: string): GameState | null {\n  try {\n    const data = JSON.parse(json) as SaveData;\n    if (!data || typeof data.version !== \"number\") return null;\n    if (data.version === 1 && data.state) {\n      return data.state;\n    }\n    return null;\n  } catch {\n    return null;\n  }\n}\n\n/**\n * Validates that a state object has the expected shape.\n */\nexport function isValidState(state: unknown): state is GameState {\n  if (!state || typeof state !== \"object\") return false;\n  const s = state as Record<string, unknown>;\n  return (\n    typeof s.tick === \"number\" &&\n    typeof s.paused === \"boolean\" &&\n    s.player !== undefined &&\n    Array.isArray(s.enemies)\n  );\n}\n\n/**\n * Returns the current save data version.\n */",
+      "content_hash": "f1ccc7d28c4e3e34",
+      "language": "typescript",
+      "symbols": [
+        "serializeState",
+        "deserializeState",
+        "isValidState"
+      ],
+      "imports": [
+        "../core/gameState.js",
+        "../core/gameState.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "systems/save.ts",
+      "start_line": 51,
+      "end_line": 64,
+      "content": "    typeof s.tick === \"number\" &&\n    typeof s.paused === \"boolean\" &&\n    s.player !== undefined &&\n    Array.isArray(s.enemies)\n  );\n}\n\n/**\n * Returns the current save data version.\n */\nexport function getCurrentVersion(): number {\n  return 1;\n}\n",
+      "content_hash": "f6e5cbfcd7f28af3",
+      "language": "typescript",
+      "symbols": [
+        "getCurrentVersion"
+      ],
+      "imports": [
+        "../core/gameState.js",
+        "../core/gameState.js"
+      ],
+      "chunk_type": "fixed"
+    },
+    {
+      "file_path": "systems/score.ts",
+      "start_line": 1,
+      "end_line": 50,
+      "content": "/**\n * Score management system.\n * Handles points, high scores, and display formatting.\n */\n\nimport type { GameState } from \"../core/gameState.js\";\n\n/**\n * Adds points to the player's score.\n * Does NOT apply any combo multiplier \u2014 just raw points.\n */\nexport function addScore(state: GameState, points: number): GameState {\n  if (state.paused) return state;\n  return {\n    ...state,\n    player: {\n      ...state.player,\n      score: state.player.score + points,\n    },\n  };\n}\n\n/**\n * Resets score to zero.\n */\nexport function resetScore(state: GameState): GameState {\n  return {\n    ...state,\n    player: {\n      ...state.player,\n      score: 0,\n      combo: 0,\n    },\n  };\n}\n\n/**\n * Returns the current score.\n */\nexport function getScore(state: GameState): number {\n  return state.player.score;\n}\n\n/**\n * Formats score for display (e.g., 1500 -> \"1,500\").\n */\nexport function formatScore(score: number): string {\n  return score.toLocaleString(\"en-US\");\n}\n",
+      "content_hash": "44d4212748f2a953",
+      "language": "typescript",
+      "symbols": [
+        "addScore",
+        "resetScore",
+        "getScore",
+        "formatScore"
+      ],
+      "imports": [
+        "../core/gameState.js"
+      ],
+      "chunk_type": "fixed"
+    }
+  ]
+}

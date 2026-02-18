@@ -21,7 +21,7 @@ from ..rag.indexer import CodebaseIndex, index_codebase, save_index, load_index
 from ..rag.retriever import retrieve, format_context
 from ..llm.openai_compat import LLMClient
 from ..llm.prompts import build_patch_prompt
-from ..patch.diff_guard import check_diff, extract_diff_from_response
+from ..patch.diff_guard import check_diff, extract_diff_from_response, _clean_diff
 from ..patch.apply_patch import apply_patch, create_working_copy
 
 console = Console()
@@ -74,7 +74,8 @@ def run_build(working_dir: Path) -> tuple[bool, str]:
         )
         if result.returncode == 0:
             return True, "Build succeeded"
-        return False, f"Build failed: {result.stderr[:500]}"
+        output = (result.stderr + result.stdout).strip()
+        return False, f"Build failed: {output[:500]}"
     except subprocess.TimeoutExpired:
         return False, "Build timed out"
     except Exception as e:
@@ -90,12 +91,11 @@ def run_check(
     """Run the check script for a task."""
     try:
         result = subprocess.run(
-            f"node {check_script} --task {task_id} --workdir {working_dir}",
+            ["node", str(check_script), "--task", task_id, "--workdir", str(working_dir)],
             cwd=str(repo_root),
             capture_output=True,
             text=True,
             timeout=30,
-            shell=True,  # Required on Windows for npm (.cmd)
         )
         if result.returncode == 0:
             return True, "Check passed"
@@ -105,6 +105,19 @@ def run_check(
         return False, "Check timed out"
     except Exception as e:
         return False, f"Check error: {e}"
+
+
+def _read_full_source_files(working_dir: Path, suggested_files: list[str]) -> str:
+    """Read complete source file contents for the suggested files."""
+    parts: list[str] = []
+    for rel_path in suggested_files:
+        full_path = working_dir / rel_path
+        if full_path.exists():
+            content = full_path.read_text(encoding="utf-8")
+            parts.append(f"=== {rel_path} ===\n{content}")
+        else:
+            parts.append(f"=== {rel_path} === (new file — does not exist yet)")
+    return "\n\n".join(parts)
 
 
 def run_single_task(
@@ -135,16 +148,12 @@ def run_single_task(
                         patch_applied=False, guard_passed=False)
 
     try:
-        # Step 1: Retrieve context
+        # Step 1: Build context from full source files
         console.print(f"  [blue]Retrieving context for {task_id}...[/blue]")
-        query = f"{task['user_request']} {' '.join(task.get('suggested_files', []))}"
-        retrieval_results = retrieve(
-            index, query,
-            top_k=settings.top_k,
-            file_filter=task.get("suggested_files"),
-        )
-        result.retrieval_count = len(retrieval_results)
-        context = format_context(retrieval_results)
+        suggested = task.get("suggested_files", [])
+        # Read complete source files for suggested files
+        context = _read_full_source_files(working_dir, suggested)
+        result.retrieval_count = len(suggested)
 
         # Step 2: Generate patch
         console.print(f"  [blue]Generating patch via LLM...[/blue]")
@@ -156,7 +165,7 @@ def run_single_task(
             code_context=context,
         )
         raw_response = llm_client.chat_completion(messages)
-        diff_text = extract_diff_from_response(raw_response)
+        diff_text = _clean_diff(extract_diff_from_response(raw_response))
         result.patch_generated = bool(diff_text.strip())
 
         if not result.patch_generated:

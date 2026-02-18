@@ -13,6 +13,12 @@ from ..config import Settings
 console = Console()
 
 
+def _use_completion_tokens(model: str) -> bool:
+    """Check if the model requires max_completion_tokens instead of max_tokens."""
+    m = model.lower()
+    return m.startswith(("gpt-5", "o1", "o3", "o4")) or "gpt-5" in m
+
+
 class LLMClient:
     """Client for OpenAI-compatible chat completion APIs."""
 
@@ -64,11 +70,13 @@ class LLMClient:
             )
 
         url = f"{self.base_url}/chat/completions"
+        # Newer models (gpt-5, o-series) require max_completion_tokens
+        token_key = "max_completion_tokens" if _use_completion_tokens(self.model) else "max_tokens"
         payload: dict = {
             "model": self.model,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": max_tokens,
+            token_key: max_tokens,
         }
         if stop:
             payload["stop"] = stop

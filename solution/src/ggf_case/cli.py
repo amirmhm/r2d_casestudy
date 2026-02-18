@@ -149,13 +149,19 @@ def metrics(
         raise typer.Exit(code=1)
 
     gold = json.loads(gl_path.read_text(encoding="utf-8"))
+
+    # Normalise paths: gold labels use "src/..." prefix, indexer may not
+    def _norm(p: str) -> str:
+        return p.removeprefix("src/")
+
     queries = []
     for task_id, task_gold in gold.get("tasks", {}).items():
         relevant_files = task_gold.get("relevant_files_ranked", [])
         results = retrieve(index, " ".join(relevant_files), top_k=settings.top_k,
                           strategy=settings.retrieval_strategy)
-        retrieved_files = [r.chunk.file_path for r in results]
-        queries.append({"retrieved": retrieved_files, "relevant": relevant_files})
+        retrieved_files = [_norm(r.chunk.file_path) for r in results]
+        relevant_normed = [_norm(f) for f in relevant_files]
+        queries.append({"retrieved": retrieved_files, "relevant": relevant_normed})
 
     scores = compute_retrieval_scores(queries, k=5)
     console.print(f"\n[bold]Retrieval Metrics (k=5, strategy={settings.retrieval_strategy}):[/bold]")

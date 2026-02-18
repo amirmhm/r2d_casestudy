@@ -125,27 +125,84 @@ def check_diff(
 def extract_diff_from_response(response: str) -> str:
     """
     Extract unified diff from an LLM response.
-    Handles cases where the LLM wraps the diff in markdown code blocks.
+    Handles cases where the LLM wraps the diff in markdown code blocks,
+    or returns the diff inline with explanation text.
     """
-    # Try to extract from code blocks first
-    code_block_pattern = r'```(?:diff|patch)?\s*\n(.*?)\n```'
+    # Strategy 1: Extract from ```diff or ```patch code blocks
+    code_block_pattern = r'```(?:diff|patch)\s*\n(.*?)```'
     matches = re.findall(code_block_pattern, response, re.DOTALL)
     if matches:
-        return matches[0].strip()
+        # Pick the longest match (most likely the full diff)
+        return max(matches, key=len).strip()
 
-    # If no code blocks, look for diff-like content
+    # Strategy 2: Any code block that contains diff markers
+    generic_block_pattern = r'```\s*\n(.*?)```'
+    for match in re.findall(generic_block_pattern, response, re.DOTALL):
+        if '--- a/' in match or '+++ b/' in match or '@@' in match:
+            return match.strip()
+
+    # Strategy 3: Extract diff-like lines from plain text
     lines = response.strip().split("\n")
     diff_lines: list[str] = []
     in_diff = False
 
     for line in lines:
-        if line.startswith("--- a/") or line.startswith("diff --git"):
+        if line.startswith("diff --git") or line.startswith("--- a/") or line.startswith("--- /dev/null"):
             in_diff = True
         if in_diff:
+            # Stop collecting if we hit a clearly non-diff line after the diff
+            if line.startswith("```"):
+                break
             diff_lines.append(line)
 
     if diff_lines:
         return "\n".join(diff_lines)
 
-    # Last resort: return the whole response
-    return response.strip()
+    # Strategy 4: Look for lines starting with +++ or @@ as alternative start markers
+    diff_lines = []
+    in_diff = False
+    for line in lines:
+        if line.startswith("+++ ") or line.startswith("@@ "):
+            in_diff = True
+        if in_diff:
+            if line.startswith("```"):
+                break
+            diff_lines.append(line)
+
+    if diff_lines:
+        return "\n".join(diff_lines)
+
+    # Last resort: return empty rather than the whole response (which would be corrupt)
+    return ""
+
+
+def _clean_diff(diff_text: str) -> str:
+    """Post-process extracted diff to fix common LLM formatting issues.
+
+    Fixes:
+    - Leading spaces on ``--- a/``, ``+++ b/``, and ``@@`` lines.
+    - ``" +"`` prefix (space-plus) that should be ``"+"`` (added line).
+    - ``" -"`` prefix (space-minus) that should be ``"-"`` (removed line).
+    - Ensures blank line between file sections.
+    """
+    lines = diff_text.split("\n")
+    cleaned: list[str] = []
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith("--- a/") or stripped.startswith("--- /dev/null"):
+            if cleaned and cleaned[-1].strip():
+                cleaned.append("")
+            cleaned.append(stripped)
+        elif stripped.startswith("+++ b/") or stripped.startswith("+++ /dev/null"):
+            cleaned.append(stripped)
+        elif stripped.startswith("@@ ") and line != stripped:
+            cleaned.append(stripped)
+        elif re.match(r'^ \+', line) and not line.startswith(' +++'):
+            # " +" at start → should be "+" (added line that got context-indented)
+            cleaned.append("+" + line[2:])
+        elif re.match(r'^ -', line) and not line.startswith(' ---'):
+            # " -" at start → should be "-" (removed line that got context-indented)
+            cleaned.append("-" + line[2:])
+        else:
+            cleaned.append(line)
+    return "\n".join(cleaned)
